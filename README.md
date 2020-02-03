@@ -1,6 +1,7 @@
 # Air-Gapped Chart Packaging & Deployment
 
 
+<pre>
   -----------           -----------
  |   Chart   | 1 --->* |   Image   |
   -----------           -----------
@@ -9,6 +10,7 @@
   ---------
  |  Repo   |
   ---------
+</pre>
 
 ## Commands
 
