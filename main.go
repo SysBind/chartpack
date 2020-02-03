@@ -1,7 +1,8 @@
 package main
 
 import (
-	"./domain"
+	"github.com/SysBind/chartpack/domain"
+	"github.com/helm/helm/pkg/chartutil"
 	"io/ioutil"
 	"log"
 	"os"
@@ -28,6 +29,18 @@ type (
 
 func (exporter Exporter) Export(chart domain.Chart) {
 	log.Println("Exporting " + chart.Name)
+	filename := exporter.src + "/" + chart.Name + "/values.yaml"
+
+	source, err := ioutil.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	var vals chartutil.Values
+	vals, err = chartutil.ReadValues(source)
+
+	for k, v := range vals {
+		log.Printf("key[%s] value[%s]\n", k, v)
+	}
 }
 
 func (loader LocalLoader) Load() []domain.Chart {
@@ -39,6 +52,9 @@ func (loader LocalLoader) Load() []domain.Chart {
 	}
 	for _, file := range files {
 		if file.IsDir() {
+			if _, err := os.Stat(loader.path + "/" + file.Name() + "/Chart.yaml"); err != nil {
+				continue
+			}
 			retval = append(retval, domain.Chart{Name: file.Name()})
 		}
 	}
