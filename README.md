@@ -17,9 +17,9 @@
 
 ### package
 
-create a tarball with selected charts and images
+Create a tarball with selected charts and images
 
 
 ### deploy 
 
-copy images to selected targets and install charts 
+Copy images to selected targets and install charts 
