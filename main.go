@@ -29,17 +29,8 @@ type (
 
 func (exporter Exporter) Export(chart domain.Chart) {
 	log.Println("Exporting " + chart.Name)
-	filename := exporter.src + "/" + chart.Name + "/values.yaml"
-
-	source, err := ioutil.ReadFile(filename)
-	if err != nil {
-		panic(err)
-	}
-	var vals chartutil.Values
-	vals, err = chartutil.ReadValues(source)
-
-	for k, v := range vals {
-		log.Printf("key[%s] value[%s]\n", k, v)
+	for _, image := range chart.Images {
+		log.Println("Image: ", image)
 	}
 }
 
@@ -52,10 +43,21 @@ func (loader LocalLoader) Load() []domain.Chart {
 	}
 	for _, file := range files {
 		if file.IsDir() {
-			if _, err := os.Stat(loader.path + "/" + file.Name() + "/Chart.yaml"); err != nil {
+			if _, err := os.Stat(loader.path + "/" + file.Name() + "/values.yaml"); err != nil {
 				continue
 			}
-			retval = append(retval, domain.Chart{Name: file.Name()})
+			filename := loader.path + "/" + file.Name() + "/values.yaml"
+
+			source, err := ioutil.ReadFile(filename)
+			if err != nil {
+				panic(err)
+			}
+			var vals chartutil.Values
+			vals, err = chartutil.ReadValues(source)
+			if err != nil {
+				panic(err)
+			}
+			retval = append(retval, domain.Chart{Name: file.Name(), Values: domain.Values(vals)})
 		}
 	}
 	return retval
