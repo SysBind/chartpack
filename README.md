@@ -1,6 +1,7 @@
+![Logo](https://github.com/SysBind/chartpack/blob/master/logo.png)
+
 # Air-Gapped Helm-Charts Packaging & Deployment
 
-![Logo](https://github.com/SysBind/chartpack/blob/master/logo.png)
 <pre>
   -----------           -----------
  |   Chart   | 1 --->* |   Image   |
