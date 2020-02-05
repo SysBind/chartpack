@@ -71,16 +71,22 @@ func (loader LocalLoader) Load() []domain.Chart {
 
 
 func (image Image) Fetch() {
-	log.Println("Fetching image", image)
 	ctx := context.Background()
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		panic(err)
 	}
-
-	out, err := cli.ImagePull(ctx, image.Repo + ":" + image.Tag, types.ImagePullOptions{})
+	image_str := image.Repo + ":" + image.Tag
+	log.Println("Fetching: ", image_str)
+	out, err := cli.ImagePull(ctx, image_str, types.ImagePullOptions{})	
 	if err != nil {
-		panic(err)
+		// attempt to add docker.io prefix
+		image_str = "docker.io/library/" + image_str
+		log.Println("Retrying with: ", image_str)
+		out, err = cli.ImagePull(ctx, image_str, types.ImagePullOptions{})
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	defer out.Close()
