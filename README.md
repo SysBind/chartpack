@@ -2,7 +2,7 @@
 
 # Air-Gapped Helm-Charts Packaging & Deployment
 
-Project Status: early alpha stage, in development
+_Project Status:_ early alpha stage, in development
 
 <pre>
   -----------           -----------
