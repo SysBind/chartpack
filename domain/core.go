@@ -1,9 +1,8 @@
 package domain
 
-/*import (
-	"reflect"
+import (
 	"fmt"
-)*/
+)
 
 // "Domain"
 type (
@@ -29,22 +28,27 @@ type (
 
 func Package(charts []Chart, exporter Exporter) {
 	for _, chart := range charts {
-		// chart.populateImagesFromValues()
+		chart.populateImagesFromValues(chart.Values)
 		exporter.Export(chart)
 	}
 }
 
-/*
-func (chart *Chart) populateImagesFromValues() {
-	for k, v := range chart.Values {
+func (chart *Chart) populateImagesFromValues(values Values) {
+	for k, v := range values {
 		if k == "image" {
-			if v.Kind() == reflect.Map {
-				for s, b := range v {
-					fmt.Printf("%s: book=%v\n", s, b)
-				}
-				//chart.Images = append(chart.Images, Image{Repo: v["repository"], Name: v["repository"], Tag: v["tag"]})
+			m, ok := v.(map[string]interface{})
+			if !ok {
+				fmt.Println("populateImagesFromValues: could not convert v to map of strings")
+			} else {
+				chart.Images = append(chart.Images, Image{Repo: m["repository"].(string), Tag: m["tag"].(string)})
+			}
+		} else if v != nil {
+			// try converting to Values (i.e: map[string]interface{}), to handle nested image spec
+			m, ok := v.(map[string]interface{})
+			if ok {
+				chart.populateImagesFromValues(m)
 			}
 		}
+
 	}
 }
-*/
