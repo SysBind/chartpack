@@ -11,8 +11,7 @@ type (
 	Values map[string]interface{}
 
 	Image struct {
-		Repo string
-		Name string
+		Repo string		
 		Tag  string
 	}
 
@@ -29,42 +28,63 @@ type (
 
 func Package(charts []Chart, exporter Exporter) {
 	for _, chart := range charts {
-		chart.populateImagesFromValues(chart.Values)
-		fmt.Println("calling exporter.Export on ", chart.Name)
+		chart.populateImagesFromValues()
 		exporter.Export(chart)
 	}
 }
 
-func (chart *Chart) populateImagesFromValues(values Values) {
-	for k, v := range values {
-		if k == "image" {
-			fmt.Println("Found image record in chart", chart.Name)
-			m, ok := v.(map[string]interface{})
-			if !ok {
-				fmt.Println("populateImagesFromValues: could not convert v to map of strings")
-			} else {
-				fmt.Printf("Tag is %v\n", m["tag"])
-				imageTag := m["tag"]
+func (chart *Chart) populateImagesFromValues() {
+	var flat_tag, flat_image string // for cases where image specification is flat
 
-				var imageTagString string
-				// try as string
-				if imageTagString, ok = imageTag.(string); ok == false {
-					// try as float64 (odd panic: interface {} is float64, not string
-					var imageTagFloat float64
-					if imageTagFloat, ok = imageTag.(float64); ok {
-						imageTagString = strconv.FormatFloat(imageTagFloat, 'g', -1, 64)
+	var popFunc func(values Values)
+	
+	popFunc = func(values Values) {
+		for k, v := range values {
+			if k == "image" {
+				m, ok := v.(map[string]interface{})
+				if ok {
+					imageTag := m["tag"]
+
+					var imageTagString string
+					// try as string
+					if imageTagString, ok = imageTag.(string); ok == false {
+						// try as float64 (odd panic: interface {} is float64, not string					
+						var imageTagFloat float64
+						if imageTagFloat, ok = imageTag.(float64); ok {
+							imageTagString = strconv.FormatFloat(imageTagFloat, 'g', -1, 64)
+						}
+
 					}
-
+					chart.Images = append(chart.Images, Image{Repo: m["repository"].(string), Tag: imageTagString})		
+				} else {
+					fmt.Println("WARNING: populateImagesFromValues:  value is not to map of strings, key:", k, "trying flat parsing")
+					var ok bool
+					flat_image, ok = v.(string)
+					if ok && (flat_tag != "") {					
+						chart.Images = append(chart.Images, Image{Repo: flat_image, Tag: flat_tag})
+						flat_tag = ""
+						flat_image = ""
+					}
 				}
-				chart.Images = append(chart.Images, Image{Repo: m["repository"].(string), Tag: imageTagString})
+			} else if k == "imageTag" { // flat image spec
+				var ok bool
+				flat_tag, ok = v.(string)
+				if ok && (flat_image != "") {				
+					chart.Images = append(chart.Images, Image{Repo: flat_image, Tag: flat_tag})
+					flat_tag = ""
+					flat_image = ""
+				}
+			} else if v != nil {
+				// try converting to Values (i.e: map[string]interface{}), to handle nested image spec
+				m, ok := v.(map[string]interface{})
+				if ok {
+					// fmt.Println("recursing into ", k)
+					popFunc(m)
+				}
 			}
-		} else if v != nil {
-			// try converting to Values (i.e: map[string]interface{}), to handle nested image spec
-			m, ok := v.(map[string]interface{})
-			if ok {
-				chart.populateImagesFromValues(m)
-			}
-		}
 
+		}
 	}
+
+	popFunc(chart.Values)
 }
