@@ -16,8 +16,11 @@ func tryFetch(imageUri, imagePrefix string, dest string) error {
 	if err != nil {
 		panic(err)
 	}
-
-	log.Println("fetching: ", imagePrefix+imageUri)
+	if _, err := os.Stat(dest); err == nil {
+		log.Println("dest: ", dest, " exists, skipping")
+		return nil
+	}
+	log.Println("try fetching: ", imagePrefix+imageUri)
 	out, err := cli.ImagePull(ctx, imagePrefix+imageUri, types.ImagePullOptions{})
 	if err == nil {
 		defer out.Close()
@@ -30,7 +33,7 @@ func tryFetch(imageUri, imagePrefix string, dest string) error {
 			}
 		}
 
-		log.Println("Saving to ", dest)
+		log.Println("saving to ", dest)
 		destination, err := os.Create(dest)
 		if err != nil {
 			panic(err)

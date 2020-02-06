@@ -24,7 +24,7 @@ import (
 
 // packCmd represents the pack command
 var packCmd = &cobra.Command{
-	Use:   "pack Source Destination",
+	Use:   "pack src dest",
 	Short: "package a directory of charts",
 	Long: `Traverse diretory of helm charts, parsing each chart/values.yaml
 to extract list of docker images needed for this chart, download them, and pack it all

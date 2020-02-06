@@ -39,6 +39,16 @@ func (exporter Exporter) Export(chart domain.Chart) {
 		_image := Image{image}
 		_image.Fetch(dest)
 	}
+	// Copy also chart under dest
+	err = os.Mkdir(dest+"/chart", os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("copy chart over to ", exporter.Dest+"/"+chart.Name+"/chart")
+	err = CopyDirectory(exporter.Src+"/"+chart.Name, exporter.Dest+chart.Name+"/chart")
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (loader LocalLoader) Load() []domain.Chart {
