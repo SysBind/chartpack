@@ -20,7 +20,8 @@ _Project Status:_ early alpha stage, in development
 
 ### pack
 
-Create a tarball with selected charts and images
+Create a tarball with selected charts and images,
+and also chartpack itself, for the deploy phase.
 
 
 ### deploy 

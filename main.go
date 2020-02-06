@@ -18,5 +18,5 @@ package main
 import "github.com/SysBind/chartpack/cmd"
 
 func main() {
-  cmd.Execute()
+	cmd.Execute()
 }

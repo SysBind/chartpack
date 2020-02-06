@@ -20,6 +20,7 @@ import (
 	"github.com/SysBind/chartpack/infrastructure"
 	"github.com/spf13/cobra"
 	"log"
+	"os"
 )
 
 // packCmd represents the pack command
@@ -43,6 +44,13 @@ pack charts_dir out_dir`,
 
 		domain.Package(charts, exporter)
 
+		// copy self binary over to des
+		if err := infrastructure.Copy(os.Args[0], dest+"/chartpack"); err != nil {
+			panic(err)
+		}
+		if err := os.Chmod(dest+"/chartpack", 0744); err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 

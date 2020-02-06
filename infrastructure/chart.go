@@ -39,8 +39,8 @@ func (exporter Exporter) Export(chart domain.Chart) {
 		_image := Image{image}
 		_image.Fetch(dest)
 	}
-	// Copy also chart under dest
-	err = os.Mkdir(dest+"/chart", os.ModePerm)
+
+	err = os.MkdirAll(dest+"/chart", os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
