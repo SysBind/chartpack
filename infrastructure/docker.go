@@ -30,12 +30,6 @@ func tryFetch(imageUri, imagePrefix string, dest string) error {
 			}
 		}
 
-		log.Println("PULLED ", imagePrefix+imageUri)
-		log.Println("Listing Images")
-		images, err := cli.ImageList(ctx, types.ImageListOptions{All: true})
-		for _, image := range images {
-			log.Println("image: ", image.ID)
-		}
 		log.Println("Saving to ", dest)
 		destination, err := os.Create(dest)
 		if err != nil {
