@@ -1,22 +1,22 @@
 package infrastructure
 
 import (
-	"io"
-	"os"
-	"log"
-	"github.com/helm/helm/pkg/chartutil"
-	"io/ioutil"
 	"github.com/SysBind/chartpack/domain"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/helm/helm/pkg/chartutil"
 	"golang.org/x/net/context"
+	"io"
+	"io/ioutil"
+	"log"
+	"os"
 )
 
 type (
 	Image struct {
 		domain.Image
 	}
-	
+
 	Loader interface {
 		Load() []domain.Chart
 	}
@@ -33,7 +33,7 @@ type (
 	}
 )
 
-func (exporter Exporter) Export(chart domain.Chart) {	
+func (exporter Exporter) Export(chart domain.Chart) {
 	for _, image := range chart.Images {
 		_image := Image{image}
 		_image.Fetch()
@@ -69,27 +69,47 @@ func (loader LocalLoader) Load() []domain.Chart {
 	return retval
 }
 
-
-func (image Image) Fetch() {
+func tryFetch(imageUri string) error {
 	ctx := context.Background()
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		panic(err)
 	}
-	image_str := image.Repo + ":" + image.Tag
-	log.Println("Fetching: ", image_str)
-	out, err := cli.ImagePull(ctx, image_str, types.ImagePullOptions{})	
+
+	log.Println("Fetching: ", imageUri)
+	out, err := cli.ImagePull(ctx, imageUri, types.ImagePullOptions{})
+
 	if err != nil {
-		// attempt to add docker.io prefix
-		image_str = "docker.io/library/" + image_str
-		log.Println("Retrying with: ", image_str)
-		out, err = cli.ImagePull(ctx, image_str, types.ImagePullOptions{})
-		if err != nil {
-			panic(err)
-		}
+		return err
 	}
 
 	defer out.Close()
 
 	io.Copy(os.Stdout, out)
+
+	return nil
+}
+
+func (image Image) Fetch() {
+	image_uri := image.Repo + ":" + image.Tag
+
+	err := tryFetch(image_uri)
+
+	if err != nil {
+		// attempt to add docker.io prefix
+		image_uri = "docker.io/" + image.Repo + ":" + image.Tag
+		log.Println("Retrying with: ", image_uri)
+
+		err := tryFetch(image_uri)
+		if err != nil {
+			image_uri = "docker.io/library/" + image.Repo + ":" + image.Tag
+			log.Println("Retrying with: ", image_uri)
+
+			err := tryFetch(image_uri)
+
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
 }
