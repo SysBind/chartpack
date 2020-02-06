@@ -30,9 +30,11 @@ var deployCmd = &cobra.Command{
 Load them into Docker, and deploy (upgrade or install) the charts`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var nodes []domain.Node
+
 		nodes = infrastructure.Nodes()
 		for _, node := range nodes {
 			fmt.Printf("%s <%s>\n", node.Hostname, node.Ip)
+			fmt.Println(node.IsMaster)
 		}
 	},
 }

@@ -26,6 +26,7 @@ func Nodes() []domain.Node {
 	}
 	for _, node := range nodes.Items {
 		var nodeName, nodeIp string
+		var isMaster bool
 		for _, addr := range node.Status.Addresses {
 			switch *addr.Type {
 			case "InternalIP":
@@ -34,7 +35,14 @@ func Nodes() []domain.Node {
 				nodeName = *addr.Address
 			}
 		}
-		retval = append(retval, domain.Node{Hostname: nodeName, Ip: nodeIp})
+		// check if master
+		for idx, _ := range node.Metadata.Labels {
+			if idx == "node-role.kubernetes.io/master" {
+				isMaster = true
+				break
+			}
+		}
+		retval = append(retval, domain.Node{Hostname: nodeName, Ip: nodeIp, IsMaster: isMaster})
 	}
 
 	return retval
