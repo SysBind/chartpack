@@ -16,54 +16,37 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
 	"github.com/SysBind/chartpack/domain"
 	"github.com/SysBind/chartpack/infrastructure"
 	"github.com/spf13/cobra"
-	"log"
-	"os"
 )
 
-// packCmd represents the pack command
-var packCmd = &cobra.Command{
-	Use:   "pack src dest",
-	Short: "package a directory of charts",
-	Long: `Traverse diretory of helm charts, parsing each chart/values.yaml
-to extract list of docker images needed for this chart, download them, and pack it all
-
-pack charts_dir out_dir`,
-	Args: cobra.MinimumNArgs(2),
+// deployCmd represents the deploy command
+var deployCmd = &cobra.Command{
+	Use:   "deploy",
+	Short: "Deploy images and charts from current pack",
+	Long: `Copy over images packed with "pack" command to target machines,
+Load them into Docker, and deploy (upgrade or install) the charts`,
 	Run: func(cmd *cobra.Command, args []string) {
-		src := args[0]
-		dest := args[1]
-		log.Println("scanning " + src)
-		loader := infrastructure.LocalLoader{Path: src}
-
-		charts := loader.Load()
-
-		exporter := infrastructure.Exporter{Src: src, Dest: dest}
-
-		domain.Package(charts, exporter)
-
-		// copy self binary over to des
-		if err := infrastructure.Copy(os.Args[0], dest+"/chartpack"); err != nil {
-			panic(err)
-		}
-		if err := os.Chmod(dest+"/chartpack", 0744); err != nil {
-			log.Fatal(err)
+		var nodes []domain.Node
+		nodes = infrastructure.Nodes()
+		for _, node := range nodes {
+			fmt.Printf("%s <%s>\n", node.Hostname, node.Ip)
 		}
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(packCmd)
+	rootCmd.AddCommand(deployCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// packCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// deployCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// packCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// deployCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
