@@ -31,11 +31,21 @@ Load them into Docker, and deploy (upgrade or install) the charts`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var nodes []domain.Node
 
+		// Load Nodes Information
 		nodes = infrastructure.Nodes()
 		for _, node := range nodes {
 			fmt.Printf("%s <%s>\n", node.Hostname, node.Ip)
 			fmt.Println(node.IsMaster)
 		}
+
+		// Load Charts from local dir
+		loader := infrastructure.LocalLoader{Path: "."}
+		charts := loader.Load()
+
+		for _, chart := range charts {
+			fmt.Printf("chart: %s\n", chart.Name)
+		}
+
 	},
 }
 
