@@ -1,22 +1,22 @@
 package main
 
 import (
+	"github.com/SysBind/chartpack/domain"
+	"github.com/SysBind/chartpack/infrastructure"
 	"log"
 	"os"
-	"github.com/SysBind/chartpack/infrastructure"
-	"github.com/SysBind/chartpack/domain"
 )
 
-
 func main() {
-	arg := os.Args[1]
+	src := os.Args[1]
+	dest := os.Args[2]
 
-	log.Println("scanning " + arg)
-	loader := infrastructure.LocalLoader{Path: arg}
+	log.Println("scanning " + src)
+	loader := infrastructure.LocalLoader{Path: src}
 
 	charts := loader.Load()
 
-	exporter := infrastructure.Exporter{Src: arg, Dest: "/tmp"}
+	exporter := infrastructure.Exporter{Src: src, Dest: dest}
 
 	domain.Package(charts, exporter)
 
