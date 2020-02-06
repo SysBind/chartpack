@@ -18,7 +18,7 @@ _Project Status:_ early alpha stage, in development
 ## Commands
 
 
-### package
+### pack
 
 Create a tarball with selected charts and images
 
