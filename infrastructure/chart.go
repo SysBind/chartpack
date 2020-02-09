@@ -6,6 +6,7 @@ import (
 	"github.com/helm/helm/pkg/chartutil"
 	"io/ioutil"
 	"os"
+	"os/exec"
 )
 
 type (
@@ -74,4 +75,14 @@ func (loader LocalLoader) Load() []domain.Chart {
 		}
 	}
 	return retval
+}
+
+func DeployChart(chart, namespace string) {
+	cmd := exec.Command("helm", "upgrade", "--install", "--namespace", namespace, chart, chart)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		panic(err)
+	}
 }

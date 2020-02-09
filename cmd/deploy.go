@@ -24,6 +24,8 @@ import (
 	"strings"
 )
 
+var namespace string
+
 // deployCmd represents the deploy command
 var deployCmd = &cobra.Command{
 	Use:   "deploy",
@@ -33,6 +35,7 @@ Load them into Docker, and deploy (upgrade or install) the charts`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var nodes []domain.Node
 
+		fmt.Printf("Operating on namespace %s\n", namespace)
 		// Load Nodes Information
 		nodes = infrastructure.Nodes()
 		for _, node := range nodes {
@@ -58,6 +61,7 @@ Load them into Docker, and deploy (upgrade or install) the charts`,
 					infrastructure.RemoteLoadImage(minions, "/"+file.Name())
 				}
 			}
+			infrastructure.DeployChart(chart.Name, namespace)
 		}
 
 	},
@@ -70,7 +74,7 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// deployCmd.PersistentFlags().String("foo", "", "A help for foo")
+	deployCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "default", "namespace to deploy to")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
