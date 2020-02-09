@@ -1,14 +1,29 @@
 package infrastructure
 
 import (
+	"github.com/SysBind/chartpack/domain"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"golang.org/x/net/context"
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"strings"
 )
+
+func RemoteLoadImage(nodes []domain.Node, file string) error {
+	for _, node := range nodes {
+		cmd := exec.Command("ssh", "root@"+node.Ip, "docker", "load", "-i", file)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
+		if err != nil {
+			panic(err)
+		}
+	}
+	return nil
+}
 
 func tryFetch(imageUri, imagePrefix string, dest string) error {
 	ctx := context.Background()

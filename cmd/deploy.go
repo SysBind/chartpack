@@ -55,6 +55,7 @@ Load them into Docker, and deploy (upgrade or install) the charts`,
 			for _, file := range files {
 				if strings.HasSuffix(file.Name(), ".tar") {
 					infrastructure.CopyToNodes(minions, chart.Name+"/"+file.Name())
+					infrastructure.RemoteLoadImage(minions, "/"+file.Name())
 				}
 			}
 		}

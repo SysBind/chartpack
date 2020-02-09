@@ -3,8 +3,8 @@ package infrastructure
 import (
 	"fmt"
 	"github.com/SysBind/chartpack/domain"
-	"os"
 	"os/exec"
+	"sync"
 )
 
 type (
@@ -13,24 +13,24 @@ type (
 	}
 )
 
-func (node Node) copy(filename string) error {
+func (node Node) copy(filename string, wg *sync.WaitGroup) error {
+	defer wg.Done()
 	fmt.Printf("copying %s to %s \n", filename, node.Hostname)
 	cmd := exec.Command("scp", filename, "root@"+node.Ip+":/")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 
 	return err
 }
 
 func CopyToNodes(nodes []domain.Node, file string) error {
+	var wg sync.WaitGroup
 	for _, node := range nodes {
 		sshNode := Node{node}
-		err := sshNode.copy(file)
+		wg.Add(1)
+		go sshNode.copy(file, &wg)
 
-		if err != nil {
-			panic(err)
-		}
 	}
+	fmt.Println("CopyToNodes: waiting for scp goroutins to finish..")
+	wg.Wait()
 	return nil
 }
