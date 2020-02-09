@@ -20,6 +20,8 @@ import (
 	"github.com/SysBind/chartpack/domain"
 	"github.com/SysBind/chartpack/infrastructure"
 	"github.com/spf13/cobra"
+	"io/ioutil"
+	"strings"
 )
 
 // deployCmd represents the deploy command
@@ -34,16 +36,27 @@ Load them into Docker, and deploy (upgrade or install) the charts`,
 		// Load Nodes Information
 		nodes = infrastructure.Nodes()
 		for _, node := range nodes {
-			fmt.Printf("%s <%s>\n", node.Hostname, node.Ip)
-			fmt.Println(node.IsMaster)
+			fmt.Printf("%s <%s> (Master: %t)\n", node.Hostname, node.Ip, node.IsMaster)
 		}
 
 		// Load Charts from local dir
 		loader := infrastructure.LocalLoader{Path: "."}
 		charts := loader.Load()
 
+		minions := domain.FilterNodes(nodes, func(node domain.Node) bool { return !node.IsMaster })
+
 		for _, chart := range charts {
 			fmt.Printf("chart: %s\n", chart.Name)
+
+			files, err := ioutil.ReadDir(chart.Name)
+			if err != nil {
+				panic(err)
+			}
+			for _, file := range files {
+				if strings.HasSuffix(file.Name(), ".tar") {
+					infrastructure.CopyToNodes(minions, chart.Name+"/"+file.Name())
+				}
+			}
 		}
 
 	},

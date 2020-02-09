@@ -16,6 +16,17 @@ type (
 	}
 )
 
+func FilterNodes(nodes []Node, filter func(Node) bool) []Node {
+	var retval []Node
+
+	for _, node := range nodes {
+		if filter(node) {
+			retval = append(retval, node)
+		}
+	}
+	return retval
+}
+
 func GetNodes(loader Loader) []Node {
 	var retval []Node
 	list := loader.LoadNodes()
